@@ -1,0 +1,16 @@
+<resources>
+    <string name="app_name">Notes</string>
+    <string name="action_settings">Settings</string>
+    <string name="insert_title">Insert your title here</string>
+    <string name="example_text">Some example text</string>
+    <string name="action_save">Save</string>
+    <string name="action_new">new</string>
+    <string name="newNote">New note created</string>
+    <string name="note_saved">Your note has been saved</string>
+    <string name="question_sure">SAVE BEFORE PROCEED. Are you sure? All progress will be lost.</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
+    <string name="note_not_saved">Note not saved</string>
+    <string name="open">Open</string>
+    <string name="try_again">Try again</string>
+</resources>
