@@ -5,11 +5,11 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
-import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -18,20 +18,26 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.TextView;
 import android.widget.Toast;
-
+import es.lhdev.notes.singletons.TempData;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 
 public class MainActivity extends AppCompatActivity {
 
+    private static final int OPEN_REQUEST = 1;
+    private static final String lHNotesFolder = "LHNotes";
     private TextView text;
     private TextView title;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        Log.i(this.getClass().getSimpleName(),"onCreate");
+
         setContentView(R.layout.activity_main);
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -46,6 +52,13 @@ public class MainActivity extends AppCompatActivity {
 
         text = findViewById(R.id.text);
         title = findViewById(R.id.title);
+
+        if (TempData.getInstance().getName() != null || TempData.getInstance().getText() != null)
+        {
+            Log.i(this.getClass().getSimpleName(), "Recovering state");
+            text.setText(TempData.getInstance().getText());
+            title.setText(TempData.getInstance().getName());
+        }
     }
 
     @Override
@@ -66,8 +79,24 @@ public class MainActivity extends AppCompatActivity {
             case (R.id.action_save):
                 handleOnSaveClicked();
                 return true;
+            case (R.id.action_open):
+                handleOnOpenClicked();
+                return true;
             default:
                 return super.onOptionsItemSelected(item);
+        }
+    }
+
+    public void handleOnOpenClicked()
+    {
+        String state = Environment.getExternalStorageState();
+        if (Environment.MEDIA_MOUNTED.equals(state) && arePermitionsOk())
+        {
+            TempData.getInstance().setText(text.getText().toString());
+            TempData.getInstance().setName(title.getText().toString());
+
+            Intent i = new Intent(getApplicationContext(), OpenFileActivity.class);
+            startActivityForResult(i, OPEN_REQUEST);
         }
     }
 
@@ -76,7 +105,11 @@ public class MainActivity extends AppCompatActivity {
         b.setMessage(R.string.question_sure);
         b.setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
             @Override
-            public void onClick(DialogInterface dialog, int which) {
+            public void onClick(DialogInterface dialog, int which)
+            {
+                TempData.getInstance().setText(null);
+                TempData.getInstance().setName(null);
+
                 Intent i = new Intent(getApplicationContext(), MainActivity.class);
                 getApplicationContext().startActivity(i);
                 finish();
@@ -95,7 +128,7 @@ public class MainActivity extends AppCompatActivity {
         String state = Environment.getExternalStorageState();
         if (Environment.MEDIA_MOUNTED.equals(state) && arePermitionsOk())
         {
-            File dir = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM).toString(), "LHNotes");
+            File dir = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM).toString(), lHNotesFolder);
             dir.mkdirs();
 
             String filename = title.getText() + ".txt";
@@ -125,7 +158,8 @@ public class MainActivity extends AppCompatActivity {
 
     public boolean arePermitionsOk()
     {
-        if (checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_DENIED)
+        if (Build.VERSION.SDK_INT >= 23 &&
+                checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_DENIED)
         {
 
             Log.d("permission", "permission denied to Write Files on External storage - requesting it");
@@ -159,4 +193,45 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == OPEN_REQUEST && resultCode == RESULT_OK)
+        {
+            openFile(data.getStringExtra("fileName"));
+        }
+    }
+
+    public void openFile(String fileName)
+    {
+        TempData.getInstance().setName(fileName.replace(".txt", ""));
+
+        ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+        byte[] data;
+        int nRead;
+
+        try {
+            File f = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM).toString() + "/" + lHNotesFolder, fileName);
+            FileInputStream i = new FileInputStream(f);
+            data = new byte[i.available()];
+            //data = new byte[0];
+            //Log.i(getClass().getSimpleName(), String.valueOf(i.available()));
+
+            while ((nRead = i.read(data, 0, data.length)) != -1)
+            {
+                buffer.write(data, 0, nRead);
+            }
+
+        } catch (IOException e) {
+            data = new byte[0];
+            e.printStackTrace();
+        }
+
+        TempData.getInstance().setText(new String(data));
+
+        Intent i = new Intent(this, MainActivity.class);
+        startActivity(i);
+        finish();
+    }
 }

@@ -13,4 +13,6 @@
     <string name="note_not_saved">Note not saved</string>
     <string name="open">Open</string>
     <string name="try_again">Try again</string>
+    <string name="title_activity_open_file">OpenFileActivity</string>
+    <string name="select_file">Select file</string>
 </resources>
