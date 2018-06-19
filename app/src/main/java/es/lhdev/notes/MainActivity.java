@@ -28,7 +28,7 @@ import java.io.IOException;
 public class MainActivity extends AppCompatActivity {
 
     private static final int OPEN_REQUEST = 1;
-    private static final String lHNotesFolder = "LHNotes";
+    private static final String LHNOTESFOLDER = "LHNotes";
     private TextView text;
     private TextView title;
 
@@ -123,15 +123,15 @@ public class MainActivity extends AppCompatActivity {
         b.create().show();
     }
 
-    public void handleOnSaveClicked() {
-
+    public void handleOnSaveClicked()
+    {
         String state = Environment.getExternalStorageState();
         if (Environment.MEDIA_MOUNTED.equals(state) && arePermitionsOk())
         {
-            File dir = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM).toString(), lHNotesFolder);
+            File dir = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM).toString(), LHNOTESFOLDER);
             dir.mkdirs();
 
-            String filename = title.getText() + ".txt";
+            String filename = title.getText().toString() + ".txt";
             String textStr = text.getText().toString();
 
             File file = new File(dir, filename);
@@ -153,7 +153,6 @@ public class MainActivity extends AppCompatActivity {
         {
             Snackbar.make(findViewById(R.id.rootContainer), R.string.note_not_saved, Snackbar.LENGTH_LONG).show();
         }
-
     }
 
     public boolean arePermitionsOk()
@@ -187,6 +186,10 @@ public class MainActivity extends AppCompatActivity {
                 }
                 return;
             }
+            default:
+            {
+
+            }
 
             // other 'case' lines to check for other
             // permissions this app might request.
@@ -212,7 +215,7 @@ public class MainActivity extends AppCompatActivity {
         int nRead;
 
         try {
-            File f = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM).toString() + "/" + lHNotesFolder, fileName);
+            File f = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM).toString() + "/" + LHNOTESFOLDER, fileName);
             FileInputStream i = new FileInputStream(f);
             data = new byte[i.available()];
             //data = new byte[0];
@@ -223,7 +226,8 @@ public class MainActivity extends AppCompatActivity {
                 buffer.write(data, 0, nRead);
             }
 
-        } catch (IOException e) {
+        } catch (Exception e) {
+            //Todo: this is not properly managed.
             data = new byte[0];
             e.printStackTrace();
         }

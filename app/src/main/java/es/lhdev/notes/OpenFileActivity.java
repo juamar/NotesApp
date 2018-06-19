@@ -16,7 +16,7 @@ import java.io.File;
 
 public class OpenFileActivity extends AppCompatActivity {
 
-    private String[] files;
+    private String[] files = new String[0];
     private ListView filesListView;
     private String resultingFileName;
 
@@ -32,6 +32,7 @@ public class OpenFileActivity extends AppCompatActivity {
         File dir = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM).toString(), "LHNotes");
         dir.mkdirs();
 
+        //Todo: List only files, not folders.
         files = dir.list();
 
         filesListView = findViewById(R.id.filesListView);
