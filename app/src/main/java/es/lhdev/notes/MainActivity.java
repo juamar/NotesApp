@@ -223,6 +223,7 @@ public class MainActivity extends AppCompatActivity {
 
             while ((nRead = i.read(data, 0, data.length)) != -1)
             {
+                Log.d(this.getClass().getSimpleName(), "nRead = " + nRead);
                 buffer.write(data, 0, nRead);
             }
 
